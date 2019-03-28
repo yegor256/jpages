@@ -57,18 +57,18 @@ public final class AppTest {
                     new App.Resource() {
                         @Override
                         public App.Resource refine(final String name, final String value) {
-                            if (name.equals("X-Query")) {
-                                if (value.equals("/")) {
-                                    return new TextResource("Hello, world!");
-                                } else if (value.equals("/balance")) {
-                                    return new TextResource("256");
-                                } else if (value.equals("/id")) {
-                                    return new TextResource("yegor");
-                                } else {
-                                    return new TextResource("Not found!");
-                                }
-                            } else {
+                            if (!name.equals("X-Query")) {
                                 return this;
+                            }
+
+                            if (value.equals("/")) {
+                                return new TextResource("Hello, world!");
+                            } else if (value.equals("/balance")) {
+                                return new TextResource("256");
+                            } else if (value.equals("/id")) {
+                                return new TextResource("yegor");
+                            } else {
+                                return new TextResource("Not found!");
                             }
                         }
                         @Override
