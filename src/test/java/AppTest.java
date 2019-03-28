@@ -63,13 +63,17 @@ public final class AppTest {
 
                             if (value.equals("/")) {
                                 return new TextResource("Hello, world!");
-                            } else if (value.equals("/balance")) {
-                                return new TextResource("256");
-                            } else if (value.equals("/id")) {
-                                return new TextResource("yegor");
-                            } else {
-                                return new TextResource("Not found!");
                             }
+
+                            if (value.equals("/balance")) {
+                                return new TextResource("256");
+                            }
+
+                            if (value.equals("/id")) {
+                                return new TextResource("yegor");
+                            }
+
+                            return new TextResource("Not found!");
                         }
                         @Override
                         public void print(final App.Output output) {
