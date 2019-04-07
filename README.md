@@ -1,5 +1,3 @@
-<img src="http://www.takes.org/logo.png" width="96px" height="96px"/>
-
 [![EO principles respected here](http://www.elegantobjects.org/badge.svg)](http://www.elegantobjects.org)
 [![We recommend IntelliJ IDEA](http://www.elegantobjects.org/intellij-idea.svg)](https://www.jetbrains.com/idea/)
 
