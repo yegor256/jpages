@@ -12,3 +12,37 @@ which respects all possible principles of
 design. More about it in this
 [blog post](https://www.yegor256.com/2019/03/26/jpages.html)
 and in this [webinar](https://www.youtube.com/watch?v=bVzEPOZ_mDU).
+
+This is how you start a web app:
+
+```java
+Thread thread = new Thread(
+  () -> {
+    App app = new App(
+      new App.Resource() {
+        @Override
+        public App.Resource refine(String name, String value) {
+            if (value.equals("/")) {
+              return new TextResource("Hello, world!");
+            }
+            return new TextResource("Not found!");
+        }
+        @Override
+        public void print(App.Output output) {
+          output.print("X-Body", "Not found");
+        }
+      }
+    );
+    try {
+      app.start(8080);
+    } catch (Exception ex) {
+      System.out.println(ex.getMessage());
+      throw new IllegalStateException(ex);
+    }
+  }
+);
+thread.setDaemon(true);
+thread.start();
+```
+
+Do you want to contribute? Submit a pull request.
