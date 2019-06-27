@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Yegor Bugayenko
+ * Copyright (c) 2018-2019 Yegor Bugayenko
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,38 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.webinar;
+package org.elegantobjects.jpages;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.Test;
 
-public class Session {
+public final class SessionTest {
 
-    private final App.Resource resource;
-
-    Session(App.Resource res) {
-        this.resource = res;
-    }
-
-    String response(String request) throws IOException {
-        Map<String, String> pairs = new HashMap<>();
-        String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
-        }
-        String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        pairs.put("X-Query", parts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        App.Resource res = this.resource;
-        for (Map.Entry<String, String> pair : pairs.entrySet()) {
-            res = res.refine(pair.getKey(), pair.getValue());
-        }
-        final StringBuilder buf = new StringBuilder();
-        res.print(new App.StringBuilderOutput(buf));
-        return buf.toString();
+    @Test
+    public void testWorks() throws Exception {
+        org.elegantobjects.jpages.Session session = new org.elegantobjects.jpages.Session(
+            new org.elegantobjects.jpages.App.Resource() {
+                @Override
+                public org.elegantobjects.jpages.App.Resource refine(final String name, final String value) {
+                    return this;
+                }
+                @Override
+                public void print(final org.elegantobjects.jpages.App.Output output) {
+                    output.print("Content-Type", "text/plain");
+                    output.print("Content-Length", "13");
+                    output.print("X-Body", "Hello, world!");
+                }
+            }
+        );
+        String response = session.response("GET / HTTP/1.1\r\n");
+        MatcherAssert.assertThat(response, Matchers.containsString("HTTP/1.1 200 OK\r\n"));
     }
 
 }
