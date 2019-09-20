@@ -45,7 +45,7 @@ public final class AppTest {
                 final App app = new App(
                     new Page() {
                         @Override
-                        public Page refine(final String name, final String value) {
+                        public Page with(final String name, final String value) {
                             if (!"X-Query".equals(name)) {
                                 return this;
                             }
@@ -65,8 +65,8 @@ public final class AppTest {
                             return new TextPage("Not found!");
                         }
                         @Override
-                        public void print(final Output output) {
-                            output.print("X-Body", "Not found");
+                        public Output via(final Output output) {
+                            return output.with("X-Body", "Not found");
                         }
                     }
                 );
@@ -83,14 +83,19 @@ public final class AppTest {
         for (int attempt = 0; attempt < 10; ++attempt) {
             final String response = new JdkRequest("http://localhost:" + port)
                 .fetch().as(RestResponse.class).body();
-            MatcherAssert.assertThat(response, Matchers.containsString("Hello, world!"));
+            MatcherAssert.assertThat(
+                response,
+                Matchers.containsString("Hello, world!")
+            );
         }
         MatcherAssert.assertThat(
-            new JdkRequest("http://localhost:" + port + "/balance").fetch().as(RestResponse.class).body(),
+            new JdkRequest("http://localhost:" + port + "/balance")
+                .fetch().as(RestResponse.class).body(),
             Matchers.equalTo("256")
         );
         MatcherAssert.assertThat(
-            new JdkRequest("http://localhost:" + port + "/id").fetch().as(RestResponse.class).body(),
+            new JdkRequest("http://localhost:" + port + "/id")
+                .fetch().as(RestResponse.class).body(),
             Matchers.equalTo("yegor")
         );
         thread.interrupt();

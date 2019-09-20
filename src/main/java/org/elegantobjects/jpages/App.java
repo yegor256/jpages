@@ -65,11 +65,9 @@ public final class App {
              final OutputStream output = socket.getOutputStream()) {
             final byte[] buffer = new byte[10000];
             final int total = input.read(buffer);
-            output.write(
-                new Session(this.page).response(
-                    new String(Arrays.copyOfRange(buffer, 0, total))
-                ).getBytes()
-            );
+            new Session(this.page).with(
+                new String(Arrays.copyOfRange(buffer, 0, total))
+            ).via(new SimpleOutput("")).writeTo(output);
         }
     }
 

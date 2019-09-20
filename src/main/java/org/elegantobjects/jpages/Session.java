@@ -23,7 +23,6 @@
  */
 package org.elegantobjects.jpages;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,14 +34,14 @@ import java.util.Map;
  */
 public class Session {
 
-    private final Page resource;
+    private final Page page;
 
-    Session(Page res) {
-        this.resource = res;
+    Session(final Page pge) {
+        this.page = pge;
     }
 
-    String response(String request) throws IOException {
-        Map<String, String> pairs = new HashMap<>();
+    final Page with(final String request) {
+        final Map<String, String> pairs = new HashMap<>(0);
         final String[] lines = request.split("\r\n");
         for (int idx = 1; idx < lines.length; ++idx) {
             final String[] parts = lines[idx].split(":");
@@ -52,13 +51,11 @@ public class Session {
         pairs.put("X-Method", parts[0]);
         pairs.put("X-Query", parts[1]);
         pairs.put("X-Protocol", parts[2]);
-        Page res = this.resource;
+        Page target = this.page;
         for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            res = res.refine(pair.getKey(), pair.getValue());
+            target = target.with(pair.getKey(), pair.getValue());
         }
-        final StringBuilder buf = new StringBuilder();
-        res.print(new StringBuilderOutput(buf));
-        return buf.toString();
+        return target;
     }
 
 }

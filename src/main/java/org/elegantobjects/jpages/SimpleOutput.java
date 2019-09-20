@@ -23,29 +23,44 @@
  */
 package org.elegantobjects.jpages;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * The output.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public final class StringBuilderOutput implements Output {
+public final class SimpleOutput implements Output {
 
-    private final StringBuilder buffer;
+    private final String before;
 
-    StringBuilderOutput(final StringBuilder buf) {
-        this.buffer = buf;
+    SimpleOutput(final String txt) {
+        this.before = txt;
     }
 
     @Override
-    public void print(final String name, final String value) {
-        if (this.buffer.length() == 0) {
-            this.buffer.append("HTTP/1.1 200 OK\r\n");
+    public String toString() {
+        return this.before;
+    }
+
+    @Override
+    public Output with(final String name, final String value) {
+        final StringBuilder after = new StringBuilder(this.before);
+        if (after.length() == 0) {
+            after.append("HTTP/1.1 200 OK\r\n");
         }
         if ("X-Body".equals(name)) {
-            this.buffer.append("\r\n").append(value);
+            after.append("\r\n").append(value);
         } else {
-            this.buffer.append(name).append(": ").append(value).append("\r\n");
+            after.append(name).append(": ").append(value).append("\r\n");
         }
+        return new SimpleOutput(after.toString());
+    }
+
+    @Override
+    public void writeTo(final OutputStream output) throws IOException {
+        output.write(this.before.getBytes());
     }
 }

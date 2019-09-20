@@ -30,7 +30,6 @@ package org.elegantobjects.jpages;
  * @since 0.1
  */
 interface Page {
-    Page refine(String name, String value);
-
-    void print(Output output);
+    Page with(String name, String value);
+    Output via(Output output);
 }

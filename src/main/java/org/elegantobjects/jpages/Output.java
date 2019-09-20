@@ -23,6 +23,9 @@
  */
 package org.elegantobjects.jpages;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * The output.
  *
@@ -30,5 +33,6 @@ package org.elegantobjects.jpages;
  * @since 0.1
  */
 interface Output {
-    void print(String name, String value);
+    Output with(String name, String value);
+    void writeTo(OutputStream output) throws IOException;
 }

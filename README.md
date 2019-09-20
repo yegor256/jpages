@@ -20,17 +20,17 @@ This is how you start a web app:
 Thread thread = new Thread(
   () -> {
     App app = new App(
-      new App.Resource() {
+      new Page() {
         @Override
-        public App.Resource refine(String name, String value) {
+        public Page with(String name, String value) {
             if (value.equals("/")) {
-              return new TextResource("Hello, world!");
+              return new TextPage("Hello, world!");
             }
-            return new TextResource("Not found!");
+            return new TextPage("Not found!");
         }
         @Override
-        public void print(App.Output output) {
-          output.print("X-Body", "Not found");
+        public Output via(Output output) {
+          return output.with("X-Body", "Not found");
         }
       }
     );

@@ -40,19 +40,23 @@ public final class SessionTest {
         final Session session = new Session(
             new Page() {
                 @Override
-                public Page refine(final String name, final String value) {
+                public Page with(final String name, final String value) {
                     return this;
                 }
                 @Override
-                public void print(final Output output) {
-                    output.print("Content-Type", "text/plain");
-                    output.print("Content-Length", "13");
-                    output.print("X-Body", "Hello, world!");
+                public Output via(final Output output) {
+                    return output.with("Content-Type", "text/plain")
+                        .with("Content-Length", "13")
+                        .with("X-Body", "Hello, world!");
                 }
             }
         );
-        final String response = session.response("GET / HTTP/1.1\r\n");
-        MatcherAssert.assertThat(response, Matchers.containsString("HTTP/1.1 200 OK\r\n"));
+        final Page page = session.with("GET / HTTP/1.1\r\n");
+        final Output output = page.via(new SimpleOutput(""));
+        MatcherAssert.assertThat(
+            output.toString(),
+            Matchers.containsString("HTTP/1.1 200 OK\r\n")
+        );
     }
 
 }
