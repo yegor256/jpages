@@ -5,6 +5,7 @@
 
 [![Build Status](https://travis-ci.org/yegor256/jpages.svg)](https://travis-ci.org/yegor256/jpages)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/yegor256/jpages/blob/master/LICENSE.txt)
+[![Hits-of-Code](https://hitsofcode.com/github/yegor256/jpages)](https://hitsofcode.com/view/github/yegor256/jpages)
 
 **jPages** is an experimental prototype of a web framework,
 which respects all possible principles of
