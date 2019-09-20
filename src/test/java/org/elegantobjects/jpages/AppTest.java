@@ -49,19 +49,15 @@ public final class AppTest {
                             if (!"X-Query".equals(name)) {
                                 return this;
                             }
-
                             if ("/".equals(value)) {
                                 return new TextPage("Hello, world!");
                             }
-
                             if ("/balance".equals(value)) {
                                 return new TextPage("256");
                             }
-
                             if ("/id".equals(value)) {
                                 return new TextPage("yegor");
                             }
-
                             return new TextPage("Not found!");
                         }
                         @Override
