@@ -23,42 +23,29 @@
  */
 package org.elegantobjects.jpages;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The session.
+ * The text page.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class TextPage implements Page {
 
-    private final Page resource;
+    private final String body;
 
-    Session(Page res) {
-        this.resource = res;
+    TextPage(final String text) {
+        this.body = text;
     }
 
-    String response(String request) throws IOException {
-        Map<String, String> pairs = new HashMap<>();
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
-        }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        pairs.put("X-Query", parts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page res = this.resource;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            res = res.refine(pair.getKey(), pair.getValue());
-        }
-        final StringBuilder buf = new StringBuilder();
-        res.print(new StringBuilderOutput(buf));
-        return buf.toString();
+    @Override
+    public Page refine(final String name, final String value) {
+        return this;
     }
 
+    @Override
+    public void print(final Output output) {
+        output.print("Content-Type", "text/plain");
+        output.print("Content-Length", Integer.toString(this.body.length()));
+        output.print("X-Body", this.body);
+    }
 }

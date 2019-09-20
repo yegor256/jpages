@@ -23,42 +23,29 @@
  */
 package org.elegantobjects.jpages;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The session.
+ * The output.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class StringBuilderOutput implements Output {
 
-    private final Page resource;
+    private final StringBuilder buffer;
 
-    Session(Page res) {
-        this.resource = res;
+    StringBuilderOutput(final StringBuilder buf) {
+        this.buffer = buf;
     }
 
-    String response(String request) throws IOException {
-        Map<String, String> pairs = new HashMap<>();
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
+    @Override
+    public void print(final String name, final String value) {
+        if (this.buffer.length() == 0) {
+            this.buffer.append("HTTP/1.1 200 OK\r\n");
         }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        pairs.put("X-Query", parts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page res = this.resource;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            res = res.refine(pair.getKey(), pair.getValue());
+        if ("X-Body".equals(name)) {
+            this.buffer.append("\r\n").append(value);
+        } else {
+            this.buffer.append(name).append(": ").append(value).append("\r\n");
         }
-        final StringBuilder buf = new StringBuilder();
-        res.print(new StringBuilderOutput(buf));
-        return buf.toString();
     }
-
 }

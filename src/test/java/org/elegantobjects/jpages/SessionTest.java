@@ -27,25 +27,31 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+/**
+ * The test of the Session.
+ *
+ * @author Yegor Bugayenko (yegor256@gmail.com)
+ * @since 0.1
+ */
 public final class SessionTest {
 
     @Test
     public void testWorks() throws Exception {
-        org.elegantobjects.jpages.Session session = new org.elegantobjects.jpages.Session(
-            new org.elegantobjects.jpages.App.Resource() {
+        final Session session = new Session(
+            new Page() {
                 @Override
-                public org.elegantobjects.jpages.App.Resource refine(final String name, final String value) {
+                public Page refine(final String name, final String value) {
                     return this;
                 }
                 @Override
-                public void print(final org.elegantobjects.jpages.App.Output output) {
+                public void print(final Output output) {
                     output.print("Content-Type", "text/plain");
                     output.print("Content-Length", "13");
                     output.print("X-Body", "Hello, world!");
                 }
             }
         );
-        String response = session.response("GET / HTTP/1.1\r\n");
+        final String response = session.response("GET / HTTP/1.1\r\n");
         MatcherAssert.assertThat(response, Matchers.containsString("HTTP/1.1 200 OK\r\n"));
     }
 

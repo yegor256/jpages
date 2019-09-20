@@ -31,64 +31,45 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
-public class App extends IOException {
+/**
+ * The app.
+ *
+ * @author Yegor Bugayenko (yegor256@gmail.com)
+ * @since 0.1
+ */
+public final class App {
 
-    private static final long serialVersionUID = 2064445243625588547L;
+    private final Page page;
 
-    interface Resource {
-        Resource refine(String name, String value);
-        void print(Output output);
+    public App(final Page pge) {
+        this.page = pge;
     }
 
-    interface Output {
-        void print(String name, String value);
-    }
-
-    private final Resource resource;
-
-    public App(Resource res) {
-        this.resource = res;
-    }
-
-    public static class StringBuilderOutput implements Output {
-        private final StringBuilder buffer;
-        StringBuilderOutput(StringBuilder buf) {
-            this.buffer = buf;
-        }
-        @Override
-        public void print(final String name, final String value) {
-            if (this.buffer.length() == 0) {
-                this.buffer.append("HTTP/1.1 200 OK\r\n");
-            }
-            if (name.equals("X-Body")) {
-                this.buffer.append("\r\n").append(value);
-            } else {
-                this.buffer.append(name).append(": ").append(value).append("\r\n");
-            }
-        }
-    }
-
-    void start(int port) throws IOException {
-        try (ServerSocket server = new ServerSocket(port)) {
+    public void start(final int port) throws IOException {
+        try (final ServerSocket server = new ServerSocket(port)) {
             server.setSoTimeout(1000);
             while (true) {
-                try (Socket socket = server.accept()) {
-                    try (InputStream input = socket.getInputStream();
-                         OutputStream output = socket.getOutputStream()) {
-                        byte[] buffer = new byte[10000];
-                        int total = input.read(buffer);
-                        output.write(
-                            new Session(this.resource).response(
-                                new String(Arrays.copyOfRange(buffer, 0, total))
-                            ).getBytes()
-                        );
-                    }
-                } catch (SocketTimeoutException ex) {
+                try (final Socket socket = server.accept()) {
+                    this.process(socket);
+                } catch (final SocketTimeoutException ex) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
                 }
             }
+        }
+    }
+
+    private void process(final Socket socket) throws IOException {
+        try (final InputStream input = socket.getInputStream();
+             final OutputStream output = socket.getOutputStream()) {
+            final byte[] buffer = new byte[10000];
+            final int total = input.read(buffer);
+            output.write(
+                new Session(this.page).response(
+                    new String(Arrays.copyOfRange(buffer, 0, total))
+                ).getBytes()
+            );
         }
     }
 

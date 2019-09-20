@@ -29,54 +29,43 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+/**
+ * The test of the App.
+ *
+ * @author Yegor Bugayenko (yegor256@gmail.com)
+ * @since 0.1
+ */
 public final class AppTest {
-
-    class TextResource implements App.Resource {
-        private final String body;
-        public TextResource(String text) {
-            this.body = text;
-        }
-        @Override
-        public App.Resource refine(final String name, final String value) {
-            return this;
-        }
-        @Override
-        public void print(final App.Output output) {
-            output.print("Content-Type", "text/plain");
-            output.print("Content-Length", Integer.toString(this.body.length()));
-            output.print("X-Body", this.body);
-        }
-    }
 
     @Test
     public void testWorks() throws Exception {
-        int port = 12345;
+        final int port = 12345;
         final Thread thread = new Thread(
             () -> {
-                App app = new App(
-                    new App.Resource() {
+                final App app = new App(
+                    new Page() {
                         @Override
-                        public App.Resource refine(final String name, final String value) {
-                            if (!name.equals("X-Query")) {
+                        public Page refine(final String name, final String value) {
+                            if (!"X-Query".equals(name)) {
                                 return this;
                             }
 
-                            if (value.equals("/")) {
-                                return new TextResource("Hello, world!");
+                            if ("/".equals(value)) {
+                                return new TextPage("Hello, world!");
                             }
 
-                            if (value.equals("/balance")) {
-                                return new TextResource("256");
+                            if ("/balance".equals(value)) {
+                                return new TextPage("256");
                             }
 
-                            if (value.equals("/id")) {
-                                return new TextResource("yegor");
+                            if ("/id".equals(value)) {
+                                return new TextPage("yegor");
                             }
 
-                            return new TextResource("Not found!");
+                            return new TextPage("Not found!");
                         }
                         @Override
-                        public void print(final App.Output output) {
+                        public void print(final Output output) {
                             output.print("X-Body", "Not found");
                         }
                     }
@@ -92,7 +81,7 @@ public final class AppTest {
         thread.setDaemon(true);
         thread.start();
         for (int attempt = 0; attempt < 10; ++attempt) {
-            String response = new JdkRequest("http://localhost:" + port)
+            final String response = new JdkRequest("http://localhost:" + port)
                 .fetch().as(RestResponse.class).body();
             MatcherAssert.assertThat(response, Matchers.containsString("Hello, world!"));
         }
