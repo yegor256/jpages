@@ -38,13 +38,14 @@ public final class TextPage implements Page {
     }
 
     @Override
-    public Page with(final String name, final String value) {
+    public Page with(final String key, final String value) {
         return this;
     }
 
     @Override
     public Output via(final Output output) {
-        return output.with("Content-Type", "text/plain")
+        return output
+            .with("Content-Type", "text/plain")
             .with("Content-Length", Integer.toString(this.body.length()))
             .with("X-Body", this.body);
     }

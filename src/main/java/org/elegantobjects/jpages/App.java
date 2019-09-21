@@ -29,7 +29,9 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * The app.
@@ -45,17 +47,37 @@ public final class App {
         this.page = pge;
     }
 
-    public void start(final int port) throws IOException {
+    public void start(final int port) throws IOException, InterruptedException {
+        final List<Thread> pool = new ArrayList<>(0);
         try (final ServerSocket server = new ServerSocket(port)) {
             server.setSoTimeout(1000);
-            while (true) {
-                try (final Socket socket = server.accept()) {
-                    this.process(socket);
-                } catch (final SocketTimeoutException ex) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
+            for (int i = 0; i < 10; ++i) {
+                final Thread t = new Thread(
+                    () -> {
+                        try {
+                            while (true) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    Thread.currentThread().interrupt();
+                                    break;
+                                }
+                                try (final Socket socket = server.accept()) {
+                                    this.process(socket);
+                                } catch (final SocketTimeoutException ex) {
+                                    continue;
+                                }
+                            }
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
                     }
-                }
+                );
+                pool.add(t);
+            }
+            for (int i = 0; i < pool.size(); ++i) {
+                pool.get(i).start();
+            }
+            for (int i = 0; i < pool.size(); ++i) {
+                pool.get(i).join();
             }
         }
     }

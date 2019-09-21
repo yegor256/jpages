@@ -23,41 +23,31 @@
  */
 package org.elegantobjects.jpages;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.Test;
 
 /**
- * The session.
+ * The test of the TextPage.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class TextPageTest {
 
-    private final Page page;
-
-    Session(final Page pge) {
-        this.page = pge;
-    }
-
-    final Page with(final String request) {
-        final Map<String, String> pairs = new HashMap<>(0);
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
-        }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        final String[] qparts = parts[1].split("\\?", 2);
-        pairs.put("X-Path", qparts[0]);
-        pairs.put("X-Query", qparts.length < 2 ? "" : qparts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page target = this.page;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            target = target.with(pair.getKey(), pair.getValue());
-        }
-        return target;
+    @Test
+    public void testWorks() throws Exception {
+        final Page page = new PageWithType(
+            new SimplePage("Hi!"),
+            "text/html"
+        );
+        page.with("X-Path", "/user/account")
+            .with("Accept", "text/html");
+        final Output output = page.via(new SimpleOutput(""));
+        MatcherAssert.assertThat(
+            output.toString(),
+            Matchers.containsString("")
+        );
     }
 
 }

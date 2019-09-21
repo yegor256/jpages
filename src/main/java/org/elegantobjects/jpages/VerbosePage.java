@@ -25,39 +25,34 @@ package org.elegantobjects.jpages;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * The session.
+ * The page.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class VerbosePage implements Page {
 
-    private final Page page;
+    private final Map<String, String> args;
 
-    Session(final Page pge) {
-        this.page = pge;
+    VerbosePage() {
+        this.args = new HashMap<>(0);
     }
 
-    final Page with(final String request) {
-        final Map<String, String> pairs = new HashMap<>(0);
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
-        }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        final String[] qparts = parts[1].split("\\?", 2);
-        pairs.put("X-Path", qparts[0]);
-        pairs.put("X-Query", qparts.length < 2 ? "" : qparts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page target = this.page;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            target = target.with(pair.getKey(), pair.getValue());
-        }
-        return target;
+    @Override
+    public Page with(final String key, final String value) {
+        this.args.put(key, value);
+        return this;
     }
 
+    @Override
+    public Output via(final Output output) {
+        return new TextPage(
+            this.args.entrySet().stream()
+                .map(e -> e.getKey() + ": " + e.getValue())
+                .collect(Collectors.joining("\n"))
+        ).via(output);
+    }
 }

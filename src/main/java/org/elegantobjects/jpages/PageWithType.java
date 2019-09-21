@@ -23,41 +23,30 @@
  */
 package org.elegantobjects.jpages;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The session.
+ * The page with content type.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class PageWithType implements Page {
 
-    private final Page page;
+    private final Page origin;
 
-    Session(final Page pge) {
-        this.page = pge;
+    private final String type;
+
+    PageWithType(final Page page, final String ctype) {
+        this.origin = page;
+        this.type = ctype;
     }
 
-    final Page with(final String request) {
-        final Map<String, String> pairs = new HashMap<>(0);
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
-        }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        final String[] qparts = parts[1].split("\\?", 2);
-        pairs.put("X-Path", qparts[0]);
-        pairs.put("X-Query", qparts.length < 2 ? "" : qparts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page target = this.page;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            target = target.with(pair.getKey(), pair.getValue());
-        }
-        return target;
+    @Override
+    public Page with(final String key, final String value) {
+        return this;
     }
 
+    @Override
+    public Output via(final Output output) {
+        return this.origin.via(output.with("Content-Type", this.type));
+    }
 }

@@ -23,41 +23,39 @@
  */
 package org.elegantobjects.jpages;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The session.
+ * The page with a few routes.
  *
  * @author Yegor Bugayenko (yegor256@gmail.com)
  * @since 0.1
  */
-public class Session {
+public final class PageWithRoutes implements Page {
 
-    private final Page page;
+    private final String path;
 
-    Session(final Page pge) {
-        this.page = pge;
+    private final Page right;
+
+    private final Page wrong;
+
+    PageWithRoutes(final String pth, final Page rght, final Page wrng) {
+        this.path = pth;
+        this.right = rght;
+        this.wrong = wrng;
     }
 
-    final Page with(final String request) {
-        final Map<String, String> pairs = new HashMap<>(0);
-        final String[] lines = request.split("\r\n");
-        for (int idx = 1; idx < lines.length; ++idx) {
-            final String[] parts = lines[idx].split(":");
-            pairs.put(parts[0].trim(), parts[1].trim());
+    @Override
+    public Page with(final String key, final String value) {
+        if (key.equals("X-Path")) {
+            if (value.equals(this.path)) {
+                return this.right.with(key, value);
+            }
+            return this.wrong.with(key, value);
         }
-        final String[] parts = lines[0].split(" ");
-        pairs.put("X-Method", parts[0]);
-        final String[] qparts = parts[1].split("\\?", 2);
-        pairs.put("X-Path", qparts[0]);
-        pairs.put("X-Query", qparts.length < 2 ? "" : qparts[1]);
-        pairs.put("X-Protocol", parts[2]);
-        Page target = this.page;
-        for (final Map.Entry<String, String> pair : pairs.entrySet()) {
-            target = target.with(pair.getKey(), pair.getValue());
-        }
-        return target;
+        return this;
     }
 
+    @Override
+    public Output via(final Output output) {
+        return output;
+    }
 }

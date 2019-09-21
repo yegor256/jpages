@@ -25,6 +25,8 @@ package org.elegantobjects.jpages;
 
 import com.jcabi.http.request.JdkRequest;
 import com.jcabi.http.response.RestResponse;
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -46,19 +48,19 @@ public final class AppTest {
                     new Page() {
                         @Override
                         public Page with(final String name, final String value) {
-                            if (!"X-Query".equals(name)) {
+                            if (!"X-Path".equals(name)) {
                                 return this;
                             }
                             if ("/".equals(value)) {
-                                return new TextPage("Hello, world!");
+                                return new TextPage("Hello, world!").with(name, value);
                             }
                             if ("/balance".equals(value)) {
-                                return new TextPage("256");
+                                return new TextPage("256").with(name, value);
                             }
                             if ("/id".equals(value)) {
-                                return new TextPage("yegor");
+                                return new TextPage("yegor").with(name, value);
                             }
-                            return new TextPage("Not found!");
+                            return new TextPage("Not found!").with(name, value);
                         }
                         @Override
                         public Output via(final Output output) {
@@ -94,6 +96,93 @@ public final class AppTest {
                 .fetch().as(RestResponse.class).body(),
             Matchers.equalTo("yegor")
         );
+        thread.interrupt();
+        thread.join();
+    }
+
+    @Test
+    public void testSimple() throws Exception {
+        final int port = 12345;
+        final Thread thread = new Thread(
+            () -> {
+                final App app = new App(
+                    new TextPage("Hello, world!")
+                );
+                try {
+                    app.start(port);
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    throw new IllegalStateException(ex);
+                }
+            }
+        );
+        thread.start();
+        final Thread spammer = new Thread(
+            () -> {
+                while (true) {
+                    try {
+                        assert new JdkRequest("http://localhost:" + port)
+                            .fetch()
+                            .as(RestResponse.class)
+                            .body()
+                            .equals("Hello, world!");
+                    } catch (Exception ex) {
+                        System.out.println(ex.getMessage());
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
+        );
+        spammer.start();
+        TimeUnit.SECONDS.sleep(1);
+        thread.interrupt();
+        thread.join();
+    }
+
+    @Test
+    public void testSimpleForFirefox() throws Exception {
+        final int port = 8080;
+        final Thread thread = new Thread(
+            () -> {
+                final App app = new App(
+                    new PageWithRoutes(
+                        "/robots.txt",
+                        new TextPage("Kill all humans!"),
+                        new PageWithRoutes(
+                            "/debug",
+                            new VerbosePage(),
+                            new PageWithRoutes(
+                                "/time",
+                                new Page() {
+                                    @Override
+                                    public Page with(final String key, final String value) {
+                                        return this;
+                                    }
+                                    @Override
+                                    public Output via(final Output output) {
+                                        return new TextPage(
+                                            LocalDateTime.now().toString()
+                                        ).via(output);
+                                    }
+                                },
+                                new PageWithType(
+                                    new SimplePage("Hi, <b>Bobby</b>!"),
+                                    "text/html"
+                                )
+                            )
+                        )
+                    )
+                );
+                try {
+                    app.start(port);
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    throw new IllegalStateException(ex);
+                }
+            }
+        );
+        thread.start();
+        TimeUnit.SECONDS.sleep(1);
         thread.interrupt();
         thread.join();
     }
