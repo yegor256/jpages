@@ -25,11 +25,11 @@ package org.elegantobjects.jpages;
 
 import com.jcabi.http.request.JdkRequest;
 import com.jcabi.http.response.RestResponse;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -41,10 +41,8 @@ import org.junit.Test;
 public final class AppTest {
 
     @Test
+    @Ignore
     public void testWorks() throws Exception {
-        String iso = Instant.now().toString();
-        Instant time = Instant.parse("2007-12-03T10:15:30Z");
-        System.out.println(iso);
         final int port = 12345;
         final Thread thread = new Thread(
             () -> {
