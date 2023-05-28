@@ -46,4 +46,4 @@ thread.setDaemon(true);
 thread.start();
 ```
 
-Do you want to contribute? Submit a pull request.
+This repository is read-only now. Check [yegor256/takes](https://github.com/yegor256/takes) instead, it's in active development.
